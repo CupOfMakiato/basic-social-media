@@ -1,0 +1,24 @@
+services:
+  basicsocialmedia-db:
+    image: postgres:16
+    container_name: basicsocialmedia-db
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: BasicSocialMedia
+    ports:
+      - "5432:5432"
+    volumes:
+      - basicsocialmedia-db-data:/var/lib/postgresql/data
+  basicsocialmedia-cache:
+    image: redis:7-alpine
+    container_name: basicsocialmedia-cache
+    ports:
+      - "6379:6379"
+    restart: always
+    volumes:
+      - basicsocialmedia-redis-data:/data
+volumes:
+  pgdata:
+  basicsocialmedia-db-data:
+  basicsocialmedia-redis-data:
