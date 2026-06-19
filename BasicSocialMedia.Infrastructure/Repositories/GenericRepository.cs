@@ -32,7 +32,7 @@ namespace BasicSocialMedia.Infrastructure.Repositories
         public async Task AddAsync(TEntity entity)
         {
             entity.CreationDate = _timeService.GetCurrentTime();
-            entity.CreatedBy = _claimsService.GetCurrentUserId;
+            entity.CreatedBy = GetCurrentUserIdOrNull();
             await _dbSet.AddAsync(entity);
         }
         public async Task Add(TEntity entity)
@@ -44,7 +44,7 @@ namespace BasicSocialMedia.Infrastructure.Repositories
         {
             entity.IsDeleted = true;
             entity.DeletionDate = _timeService.GetCurrentTime();
-            entity.DeleteBy = _claimsService.GetCurrentUserId;
+            entity.DeleteBy = GetCurrentUserIdOrNull();
             _dbSet.Update(entity);
         }
         public void HardRemove(TEntity entity)
@@ -60,7 +60,7 @@ namespace BasicSocialMedia.Infrastructure.Repositories
         public void Update(TEntity entity)
         {
             entity.ModificationDate = _timeService.GetCurrentTime();
-            entity.ModificationBy = _claimsService.GetCurrentUserId;
+            entity.ModificationBy = GetCurrentUserIdOrNull();
             _dbSet.Update(entity);
         }
 
@@ -69,7 +69,7 @@ namespace BasicSocialMedia.Infrastructure.Repositories
             foreach (var entity in entities)
             {
                 entity.CreationDate = _timeService.GetCurrentTime();
-                entity.CreatedBy = _claimsService.GetCurrentUserId;
+                entity.CreatedBy = GetCurrentUserIdOrNull();
             }
             await _dbSet.AddRangeAsync(entities);
         }
@@ -80,7 +80,7 @@ namespace BasicSocialMedia.Infrastructure.Repositories
             {
                 entity.IsDeleted = true;
                 entity.DeletionDate = _timeService.GetCurrentTime();
-                entity.DeleteBy = _claimsService.GetCurrentUserId;
+                entity.DeleteBy = GetCurrentUserIdOrNull();
             }
             _dbSet.UpdateRange(entities);
         }
@@ -109,10 +109,17 @@ namespace BasicSocialMedia.Infrastructure.Repositories
         {
             foreach (var entity in entities)
             {
-                entity.CreationDate = _timeService.GetCurrentTime();
-                entity.CreatedBy = _claimsService.GetCurrentUserId;
+                entity.ModificationDate = _timeService.GetCurrentTime();
+                entity.ModificationBy = GetCurrentUserIdOrNull();
             }
             _dbSet.UpdateRange(entities);
+        }
+
+        private Guid? GetCurrentUserIdOrNull()
+        {
+            return _claimsService.GetCurrentUserId == Guid.Empty
+                ? null
+                : _claimsService.GetCurrentUserId;
         }
     }
 }

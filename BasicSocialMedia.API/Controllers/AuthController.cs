@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using System.Security.Claims;
 
-namespace NTierArchitecture.API.Controllers
+namespace BasicSocialMedia.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

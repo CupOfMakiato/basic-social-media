@@ -33,6 +33,7 @@ namespace BasicSocialMedia.Infrastructure.Repositories
         {
             return _dbContext.User
                 .Include(user => user.Role)
+                .Include(user => user.ProfilePicture)
                 .FirstOrDefaultAsync(user => user.Id == id);
         }
 

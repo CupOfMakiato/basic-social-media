@@ -10,5 +10,6 @@ namespace BasicSocialMedia.Domain.Entities
         public string Password { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public UserStatus Status { get; set; }
+        public Media? ProfilePicture { get; set; }
     }
 }

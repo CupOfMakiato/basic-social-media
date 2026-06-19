@@ -24,6 +24,9 @@ namespace BasicSocialMedia.Infrastructure
             // Service
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IFollowService, FollowService>();
+            services.AddScoped<IDirectMessageChatService, DirectMessageChatService>();
+            services.AddScoped<IMessageService, MessageService>();
 
             services.AddScoped<IRedisService, RedisService>();
             services.AddScoped<ICloudinaryService, CloudinaryService>();
@@ -34,6 +37,10 @@ namespace BasicSocialMedia.Infrastructure
 
             // Repo
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IMediaRepository, MediaRepository>();
+            services.AddScoped<IFollowRepository, FollowRepository>();
+            services.AddScoped<IDirectMessageChatRepository, DirectMessageChatRepository>();
+            services.AddScoped<IMessageRepository, MessageRepository>();
 
 
             // Cloudinary

@@ -67,6 +67,17 @@ builder.Services.AddAuthentication(options =>
         {
             OnMessageReceived = context =>
             {
+                var accessTokenFromQuery = context.Request.Query["access_token"].ToString();
+                var requestPath = context.HttpContext.Request.Path;
+
+                if (string.IsNullOrWhiteSpace(context.Token)
+                    && !string.IsNullOrWhiteSpace(accessTokenFromQuery)
+                    && (requestPath.StartsWithSegments("/hub/messageHub")
+                        || requestPath.StartsWithSegments("/hub/notificationHub")))
+                {
+                    context.Token = accessTokenFromQuery;
+                }
+
                 if (string.IsNullOrWhiteSpace(context.Token)
                     && context.Request.Cookies.TryGetValue(accessTokenCookieName, out var accessToken))
                 {

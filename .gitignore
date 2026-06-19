@@ -361,3 +361,4 @@ FodyWeavers.xsd
 **/Migrations/
 **/.tmp-build-verify/
 /BasicSocialMedia.API/appsettings.Development.json
+**/.build-check/

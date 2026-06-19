@@ -10,5 +10,6 @@ namespace BasicSocialMedia.Application.Abstractions.ThirdPartyService.Cloudinary
     {
         public string? FileUrl { get; set; }
         public string? PublicFileId { get; set; }
+        public string? ErrorMessage { get; set; }
     }
 }

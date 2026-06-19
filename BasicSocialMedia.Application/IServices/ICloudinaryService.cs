@@ -7,6 +7,6 @@ namespace BasicSocialMedia.Application.IServices
     public interface ICloudinaryService
     {
         Task<DeletionResult> DeleteFileAsync(string publicId);
-        Task<CloudinaryResponse> UploadImage(IFormFile file, string folderName);
+        Task<CloudinaryResponse?> UploadImage(IFormFile file, string folderName, string? format = null);
     }
 }

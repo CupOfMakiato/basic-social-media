@@ -28,28 +28,61 @@ namespace BasicSocialMedia.Application.Services
             return await _cloudinary.DestroyAsync(deletionParams);
         }
 
-        public async Task<CloudinaryResponse> UploadImage(IFormFile file, string folderName)
+        public async Task<CloudinaryResponse?> UploadImage(IFormFile file, string folderName, string? format = null)
         {
             if (file is null)
                 return null;
+
+            await using var fileStream = file.OpenReadStream();
+
+            var publicId = $"{Guid.NewGuid()}/{Path.GetFileNameWithoutExtension(file.FileName)}";
             var uploadParams = new ImageUploadParams
             {
-                File = new FileDescription(file.FileName, file.OpenReadStream()),
-                PublicId = $"/{Guid.NewGuid()}/{Path.GetFileNameWithoutExtension(file.FileName)}",
+                File = new FileDescription(file.FileName, fileStream),
+                PublicId = publicId,
                 Overwrite = true,
                 Folder = folderName
             };
+
+            if (!string.IsNullOrWhiteSpace(format))
+            {
+                uploadParams.Format = format;
+            }
 
             var uploadResult = await _cloudinary.UploadAsync(uploadParams);
 
             if (uploadResult.Error != null)
             {
-                return null; // Handle upload failure
+                return new CloudinaryResponse
+                {
+                    ErrorMessage = uploadResult.Error.Message
+                };
+            }
+
+            var fileUrl = uploadResult.SecureUrl?.ToString();
+            if (string.IsNullOrWhiteSpace(fileUrl))
+            {
+                fileUrl = uploadResult.Url?.ToString();
+            }
+
+            var publicFileId = uploadResult.PublicId;
+            if (string.IsNullOrWhiteSpace(publicFileId))
+            {
+                publicFileId = $"{folderName}/{publicId}".Trim('/');
+            }
+
+            if (string.IsNullOrWhiteSpace(fileUrl) || string.IsNullOrWhiteSpace(publicFileId))
+            {
+                return new CloudinaryResponse
+                {
+                    ErrorMessage = "Cloudinary upload did not return a file URL or public id."
+                };
             }
 
             return new CloudinaryResponse
             {
-                FileUrl = uploadResult.SecureUrl.ToString(),
+                FileUrl = fileUrl,
+                PublicFileId = publicFileId
             };
         }
     }
