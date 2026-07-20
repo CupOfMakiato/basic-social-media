@@ -5,6 +5,8 @@ using BasicSocialMedia.API.Services;
 using BasicSocialMedia.API.Middlewares;
 using BasicSocialMedia.Application.IServices;
 using BasicSocialMedia.Infrastructure.Hubs;
+using FluentValidation;
+using BasicSocialMedia.API.User.Validations;
 
 namespace BasicSocialMedia.API
 {
@@ -66,6 +68,7 @@ namespace BasicSocialMedia.API
             services.AddHttpContextAccessor();
             services.AddFluentValidationAutoValidation();
             services.AddFluentValidationClientsideAdapters();
+            services.AddValidatorsFromAssemblyContaining<ProfilePictureUploadRequestValidator>();
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("User", policy =>

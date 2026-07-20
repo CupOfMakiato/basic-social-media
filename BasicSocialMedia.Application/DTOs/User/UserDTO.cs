@@ -9,6 +9,7 @@ namespace BasicSocialMedia.Application.DTOs.User
         public string Email { get; set; }
         public UserStatus Status { get; set; }
         public int RoleId { get; set; }
+        public string? ProfilePictureUrl { get; set; }
 
     }
 }
