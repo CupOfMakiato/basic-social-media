@@ -14,5 +14,9 @@ terraform {
       source  = "cloudposse/awsutils"
       version = ">= 0.11.0"
     }
+    upstash = {
+      source  = "upstash/upstash"
+      version = "~> 2.1.0"
+    }
   }
 }

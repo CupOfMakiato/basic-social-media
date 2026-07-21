@@ -1,5 +1,8 @@
-module "budget" {
-  source = "./modules/budget"
+module "upstash" {
+  source = "./modules/upstash"
+
+  database_name  = "${local.project_name}-${local.environment}-redis"
+  primary_region = var.aws_region
 }
 
 module "api_lambda" {

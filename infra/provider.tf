@@ -2,6 +2,11 @@ provider "doppler" {
   doppler_token = var.DOPPLER_TOKEN
 }
 
+provider "upstash" {
+  email   = var.UPSTASH_EMAIL
+  api_key = var.UPSTASH_API_KEY
+}
+
 provider "aws" {
   region     = var.aws_region
   access_key = var.AWS_ACCESS_KEY_ID

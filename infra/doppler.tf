@@ -15,13 +15,15 @@ locals {
   #   ses_domain      = try(data.doppler_secrets.this.map.TF_SES_DOMAIN, "empty")
 
   # Database configuration
-  db_connection_string    = data.doppler_secrets.this.map.CONNECTIONSTRINGS_DEFAULTCONNECTION
-  redis_connection_string = try(data.doppler_secrets.this.map.CONNECTIONSTRINGS_REDIS, "")
+  db_connection_string            = data.doppler_secrets.this.map.CONNECTIONSTRINGS_DEFAULTCONNECTION
+  redis_connection_string         = try(data.doppler_secrets.this.map.CONNECTIONSTRINGS_REDIS, "")
+  upstash_redis_connection_string = module.upstash.connection_string
 
   lambda_environment = {
     ASPNETCORE_ENVIRONMENT               = local.environment
     ConnectionStrings__DefaultConnection = local.db_connection_string
     ConnectionStrings__Redis             = local.redis_connection_string
+    ConnectionStrings__UpstashRedis      = local.upstash_redis_connection_string
     JwtSettings__SecretKey               = data.doppler_secrets.this.map.JWTSETTINGS_SECRETKEY
     JwtSettings__Issuer                  = local.api_domain
     JwtSettings__Audience                = local.api_domain

@@ -1,22 +1,42 @@
 name: CI
 
+permissions:
+  contents: read
+
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+    paths:
+      - "**/*.cs"
+      - "**/*.csproj"
+      - "BasicSocialMedia.sln"
+      - ".github/workflows/ci.yml"
   pull_request:
-    branches: [main]
+    branches:
+      - main
+    paths:
+      - "**/*.cs"
+      - "**/*.csproj"
+      - "BasicSocialMedia.sln"
+      - ".github/workflows/ci.yml"
+  workflow_dispatch:
 
 jobs:
-  build:
+  ci:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-dotnet@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
-      - run: dotnet restore BasicSocialMedia.sln
+      - name: Restore Dependencies
+        run: dotnet restore BasicSocialMedia.sln
 
-      - run: dotnet build BasicSocialMedia.sln --configuration Release --no-restore
+      - name: Build
+        run: dotnet build BasicSocialMedia.sln --configuration Release --no-restore

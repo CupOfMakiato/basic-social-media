@@ -65,6 +65,17 @@ variable "AWS_SECRET_ACCESS_KEY" {
   sensitive   = true
 }
 
+variable "UPSTASH_EMAIL" {
+  description = "Upstash account email (pulled from Doppler via TF_VAR_UPSTASH_EMAIL)"
+  type        = string
+}
+
+variable "UPSTASH_API_KEY" {
+  description = "Upstash API key (pulled from Doppler via TF_VAR_UPSTASH_API_KEY)"
+  type        = string
+  sensitive   = true
+}
+
 variable "lambda_package_path" {
   description = "Path to the zipped Lambda deployment package"
   type        = string
