@@ -1,5 +1,9 @@
 # BasicSocialMedia
 
+[![CI](https://github.com/CupOfMakiato/basic-social-media/actions/workflows/ci.yml/badge.svg)](https://github.com/CupOfMakiato/basic-social-media/actions/workflows/ci.yml)
+
+[![CD](https://github.com/CupOfMakiato/basic-social-media/actions/workflows/cd.yml/badge.svg)](https://github.com/CupOfMakiato/basic-social-media/actions/workflows/cd.yml)
+
 BasicSocialMedia is a monolith social media backend built with ASP.NET Core 8. It handles authentication, user profiles, follows, direct chats, messages, media uploads, JWT sessions, Redis-backed token validation, and real-time SignalR hubs.
 
 The application is designed as one deployable API, with layered projects inside the solution for API, application logic, infrastructure, and domain models.

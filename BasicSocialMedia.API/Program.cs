@@ -5,6 +5,7 @@ using BasicSocialMedia.Application.IServices;
 using BasicSocialMedia.Application.Settings.Jwt;
 using BasicSocialMedia.Infrastructure;
 using BasicSocialMedia.Infrastructure.Hubs;
+using Amazon.Lambda.AspNetCoreServer.Hosting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -139,6 +140,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
+builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 
 //builder.Services.AddHangfireServer();
 
