@@ -49,18 +49,7 @@ jobs:
             --project BasicSocialMedia.Infrastructure \
             --startup-project BasicSocialMedia.API \
             --configuration Release \
-            --self-contained false \
             --output artifacts/migrate
-        env:
-          DOTNET_ENVIRONMENT: Production
-          ASPNETCORE_ENVIRONMENT: Production
-          JwtSettings__SecretKey: "00000000000000000000000000000000"
-          JwtSettings__Issuer: "https://localhost"
-          JwtSettings__Audience: "https://localhost"
-          EncryptionSettings__AesKey: "00000000000000000000000000000000"
-          ConnectionStrings__DefaultConnection: Host=localhost;Database=BasicSocialMedia;Username=postgres;Password=postgres
-          ConnectionStrings__Redis: localhost:6379
-          ConnectionStrings__UpstashRedis: ""
 
       - name: Migrate database
         run: ./artifacts/migrate --connection "$DATABASE_CONNECTION_STRING"
