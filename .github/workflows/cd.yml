@@ -1,0 +1,74 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: lambda-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy-api:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Setup AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+
+      - name: Restore
+        run: dotnet restore BasicSocialMedia.sln
+
+      - name: Build
+        run: dotnet build BasicSocialMedia.sln --configuration Release --no-restore
+
+      - name: Install EF tool
+        run: dotnet tool install --global dotnet-ef --version 8.0.0
+
+      - name: Build migration bundle
+        run: |
+          mkdir -p artifacts
+          dotnet ef migrations bundle \
+            --project BasicSocialMedia.Infrastructure \
+            --startup-project BasicSocialMedia.API \
+            --configuration Release \
+            --output artifacts/migrate
+
+      - name: Migrate database
+        run: ./artifacts/migrate --connection "$DATABASE_CONNECTION_STRING"
+        env:
+          DATABASE_CONNECTION_STRING: ${{ secrets.DATABASE_CONNECTION_STRING }}
+
+      - name: Publish API
+        run: dotnet publish BasicSocialMedia.API/BasicSocialMedia.API.csproj --configuration Release --no-restore --output artifacts/lambda-publish
+
+      - name: Zip API
+        run: |
+          cd artifacts/lambda-publish
+          zip -r ../BasicSocialMedia.API.zip .
+
+      - name: Update Lambda code
+        run: |
+          aws lambda update-function-code \
+            --function-name "$LAMBDA_FUNCTION_NAME" \
+            --zip-file fileb://artifacts/BasicSocialMedia.API.zip
+          aws lambda wait function-updated --function-name "$LAMBDA_FUNCTION_NAME"
+        env:
+          LAMBDA_FUNCTION_NAME: ${{ secrets.LAMBDA_FUNCTION_NAME }}

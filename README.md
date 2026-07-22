@@ -1,5 +1,9 @@
 # BasicSocialMedia
 
+[![CI](https://github.com/CupOfMakiato/basic-social-media/actions/workflows/ci.yml/badge.svg)](https://github.com/CupOfMakiato/basic-social-media/actions/workflows/ci.yml)
+
+[![CD](https://github.com/CupOfMakiato/basic-social-media/actions/workflows/cd.yml/badge.svg)](https://github.com/CupOfMakiato/basic-social-media/actions/workflows/cd.yml)
+
 BasicSocialMedia is a monolith social media backend built with ASP.NET Core 8. It handles authentication, user profiles, follows, direct chats, messages, media uploads, JWT sessions, Redis-backed token validation, and real-time SignalR hubs.
 
 The application is designed as one deployable API, with layered projects inside the solution for API, application logic, infrastructure, and domain models.
@@ -16,18 +20,19 @@ Production architecture:
 - **API Gateway** routes requests into the backend.
 - **AWS Lambda** hosts the monolith API.
 - **NeonDB** provides managed PostgreSQL.
+- **Upstash Redis** stores token/session cache data in the cloud.
 - **Amazon Cognito** is part of the auth boundary in the cloud design.
 - **Amazon SES** is used for email delivery in the cloud design.
 - **MoMo / PayOS** are third-party payment integrations.
 
-Local development uses Docker Compose for PostgreSQL and Redis. The current codebase also contains a Cloudinary media service implementation.
+Local development uses Docker Compose for PostgreSQL and Redis. Cloud deployments can use Upstash Redis through configuration. The current codebase also contains a Cloudinary media service implementation.
 
 ## Tech Stack
 
 - **.NET 8 / ASP.NET Core Web API**
 - **Entity Framework Core**
 - **PostgreSQL / NeonDB**
-- **Redis**
+- **Redis / Upstash Redis**
 - **SignalR**
 - **JWT authentication**
 - **FluentValidation**
@@ -83,9 +88,18 @@ Update `BasicSocialMedia.API/appsettings.json` or use user secrets/environment v
 
 - `ConnectionStrings:DefaultConnection`
 - `ConnectionStrings:Redis`
+- `ConnectionStrings:UpstashRedis`
 - `JwtSettings:SecretKey`
 - `EncryptionSettings:AesKey`
 - `CloudinarySetting:*`
+
+`ConnectionStrings:UpstashRedis` is preferred when set. Leave it empty or keep the placeholder value to fall back to local Redis on `ConnectionStrings:Redis`.
+
+Upstash URL format:
+
+```text
+rediss://default:<password>@<host>:6379
+```
 
 `JwtSettings:SecretKey` must be at least 32 bytes.
 
@@ -125,3 +139,5 @@ SignalR hubs:
 ## Notes
 
 This repository is intentionally kept as a monolith: one deployable API, one database boundary, and simple internal project layering. Split services only when deployment, scaling, or ownership pressure proves the monolith is no longer enough.
+
+The final goal is to use most of the serverless infrastructure :3
