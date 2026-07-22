@@ -1,3 +1,11 @@
+data "aws_cloudfront_cache_policy" "caching_disabled" {
+  name = "Managed-CachingDisabled"
+}
+
+data "aws_cloudfront_origin_request_policy" "all_viewer_except_host_header" {
+  name = "Managed-AllViewerExceptHostHeader"
+}
+
 resource "aws_cloudfront_distribution" "api" {
   enabled         = true
   is_ipv6_enabled = true
@@ -21,11 +29,6 @@ resource "aws_cloudfront_distribution" "api" {
       origin_protocol_policy = "https-only"
       origin_ssl_protocols   = ["TLSv1.2"]
     }
-
-    custom_header {
-      name  = "X-Origin-Verify"
-      value = var.origin_verify_secret
-    }
   }
 
   default_cache_behavior {
@@ -35,8 +38,8 @@ resource "aws_cloudfront_distribution" "api" {
     cached_methods         = ["GET", "HEAD", "OPTIONS"]
     compress               = true
 
-    cache_policy_id          = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" #not sure here
-    origin_request_policy_id = "b689b0a8-53d0-40ab-baf2-68738e2966ac" #not sure here
+    cache_policy_id          = data.aws_cloudfront_cache_policy.caching_disabled.id
+    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.all_viewer_except_host_header.id
   }
 
   restrictions {
@@ -54,7 +57,7 @@ resource "aws_cloudfront_distribution" "api" {
 
   tags = {
     Name        = "${var.project_name}-api-cdn"
-    Environment = var.project_name
+    Environment = var.environment
     Project     = var.project_name
   }
 

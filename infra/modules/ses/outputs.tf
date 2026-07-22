@@ -80,7 +80,7 @@ output "dns_records_for_cloudflare" {
     dkim_records = [
       for i, token in aws_ses_domain_dkim.main.dkim_tokens : {
         type    = "CNAME"
-        name    = "${token}._domainkey"
+        name    = "${token}._domainkey.${var.domain}"
         value   = "${token}.dkim.amazonses.com"
         ttl     = 600
         comment = "DKIM Record ${i + 1} of 3"

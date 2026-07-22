@@ -14,6 +14,15 @@ module "api_lambda" {
   environment_variables = local.lambda_environment
 }
 
+module "iam" {
+  source = "./modules/iam"
+
+  project_name        = local.project_name
+  environment         = local.environment
+  github_repo         = var.github_repo
+  lambda_function_arn = module.api_lambda.arn
+}
+
 module "api_gateway" {
   source = "./modules/api-gateway"
 
@@ -23,10 +32,30 @@ module "api_gateway" {
   cors_origins         = var.cors_origins
 }
 
+module "cloudfront" {
+  source = "./modules/cloudfront"
+
+  providers = {
+    aws.us_east_1 = aws.us_east_1
+  }
+
+  project_name       = local.project_name
+  environment        = local.environment
+  api_gateway_domain = module.api_gateway.api_endpoint
+}
+
 output "api_url" {
   value = module.api_gateway.api_endpoint
 }
 
+output "cloudfront_url" {
+  value = "https://${module.cloudfront.distribution_domain}"
+}
+
 output "lambda_function_name" {
   value = nonsensitive(module.api_lambda.function_name)
+}
+
+output "github_actions_lambda_deploy_role_arn" {
+  value = module.iam.github_actions_lambda_deploy_role_arn
 }

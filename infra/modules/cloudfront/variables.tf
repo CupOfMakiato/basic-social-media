@@ -7,15 +7,14 @@ variable "project_name" {
   type        = string
 }
 
-variable "api_gateway_domain" {
-  description = "Domain name of the API Gateway origin"
+variable "environment" {
+  description = "Environment name"
   type        = string
 }
 
-variable "origin_verify_secret" {
-  description = "Secret header value for origin verification between CloudFront and API Gateway"
+variable "api_gateway_domain" {
+  description = "Domain name of the API Gateway origin"
   type        = string
-  sensitive   = true
 }
 
 variable "custom_domain" {

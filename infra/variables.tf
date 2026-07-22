@@ -87,3 +87,9 @@ variable "lambda_handler" {
   type        = string
   default     = "BasicSocialMedia.API"
 }
+
+variable "github_repo" {
+  description = "GitHub repository allowed to deploy, in org/repo format"
+  type        = string
+  default     = "CupOfMakiato/basic-social-media"
+}
