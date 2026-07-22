@@ -30,7 +30,7 @@ jobs:
       - name: Setup AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ${{ secrets.TF_AWS_REGION }}
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
 
       - name: Restore
@@ -50,11 +50,16 @@ jobs:
             --startup-project BasicSocialMedia.API \
             --configuration Release \
             --output artifacts/migrate
+        env:
+          ConnectionStrings__DefaultConnection: ${{ secrets.CONNECTIONSTRINGS_DEFAULTCONNECTION }}
+          JwtSettings__SecretKey: ${{ secrets.JWTSETTINGS_SECRETKEY }}
+          JwtSettings__Issuer: ${{ secrets.TF_API_DOMAIN }}
+          JwtSettings__Audience: ${{ secrets.TF_API_DOMAIN }}
 
       - name: Migrate database
         run: ./artifacts/migrate --connection "$DATABASE_CONNECTION_STRING"
         env:
-          DATABASE_CONNECTION_STRING: ${{ secrets.DATABASE_CONNECTION_STRING }}
+          DATABASE_CONNECTION_STRING: ${{ secrets.CONNECTIONSTRINGS_DEFAULTCONNECTION }}
 
       - name: Publish API
         run: dotnet publish BasicSocialMedia.API/BasicSocialMedia.API.csproj --configuration Release --no-restore --output artifacts/lambda-publish
