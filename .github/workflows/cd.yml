@@ -60,6 +60,9 @@ jobs:
         run: ./artifacts/migrate --connection "$DATABASE_CONNECTION_STRING"
         env:
           DATABASE_CONNECTION_STRING: ${{ secrets.CONNECTIONSTRINGS_DEFAULTCONNECTION }}
+          JwtSettings__SecretKey: ${{ secrets.JWTSETTINGS_SECRETKEY }}
+          JwtSettings__Issuer: ${{ secrets.TF_API_DOMAIN }}
+          JwtSettings__Audience: ${{ secrets.TF_API_DOMAIN }}
 
       - name: Publish API
         run: dotnet publish BasicSocialMedia.API/BasicSocialMedia.API.csproj --configuration Release --no-restore --output artifacts/lambda-publish
