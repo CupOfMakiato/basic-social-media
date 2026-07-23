@@ -56,9 +56,13 @@ namespace BasicSocialMedia.Infrastructure.Database
                     .HasMaxLength(512);
                 entity.Property(user => user.Password)
                     .IsRequired();
+                entity.Property(user => user.CognitoSubject)
+                    .HasMaxLength(100);
                 entity.HasIndex(user => user.UserName)
                     .IsUnique();
                 entity.HasIndex(user => user.Email)
+                    .IsUnique();
+                entity.HasIndex(user => user.CognitoSubject)
                     .IsUnique();
                 entity.HasOne(user => user.Role)
                     .WithMany(role => role.Users)

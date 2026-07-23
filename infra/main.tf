@@ -1,3 +1,14 @@
+module "cognito" {
+  source = "./modules/cognito"
+
+  project_name         = local.project_name
+  environment          = local.environment
+  aws_region           = local.aws_region
+  frontend_url         = local.frontend_url
+  google_client_id     = try(data.doppler_secrets.this.map.GOOGLE_CLIENT_ID, null)
+  google_client_secret = try(data.doppler_secrets.this.map.GOOGLE_CLIENT_SECRET, null)
+}
+
 module "upstash" {
   source = "./modules/upstash"
 
@@ -50,6 +61,18 @@ output "api_url" {
 
 output "cloudfront_url" {
   value = "https://${module.cloudfront.distribution_domain}"
+}
+
+output "cognito_client_id" {
+  value = nonsensitive(module.cognito.web_client_id)
+}
+
+output "cognito_user_pool_id" {
+  value = nonsensitive(module.cognito.user_pool_id)
+}
+
+output "cognito_hosted_ui_url" {
+  value = nonsensitive(module.cognito.hosted_ui_url)
 }
 
 output "lambda_function_name" {

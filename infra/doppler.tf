@@ -11,7 +11,8 @@ locals {
   aws_region   = try(data.doppler_secrets.this.map.TF_AWS_REGION, "ap-southeast-1")
 
   # Domain configuration
-  api_domain = try(data.doppler_secrets.this.map.TF_API_DOMAIN, "https://localhost:7161")
+  api_domain   = try(data.doppler_secrets.this.map.TF_API_DOMAIN, "https://localhost:7161")
+  frontend_url = try(data.doppler_secrets.this.map.TF_FRONTEND_URL, "http://localhost:3000")
   #   ses_domain      = try(data.doppler_secrets.this.map.TF_SES_DOMAIN, "empty")
 
   # Database configuration
@@ -27,6 +28,8 @@ locals {
     JwtSettings__SecretKey               = data.doppler_secrets.this.map.JWTSETTINGS_SECRETKEY
     JwtSettings__Issuer                  = local.api_domain
     JwtSettings__Audience                = local.api_domain
+    Cognito__Authority                   = module.cognito.issuer_url
+    Cognito__ClientId                    = module.cognito.web_client_id
     EncryptionSettings__AesKey           = data.doppler_secrets.this.map.ENCRYPTIONSETTINGS_AESKEY
   }
 

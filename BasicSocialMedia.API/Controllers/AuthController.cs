@@ -61,6 +61,41 @@ namespace BasicSocialMedia.API.Controllers
             });
         }
 
+        [Authorize(AuthenticationSchemes = "Cognito")]
+        [HttpPost("cognito")]
+        public async Task<IActionResult> CognitoLogin()
+        {
+            var subject = User.FindFirstValue("sub");
+            var email = User.FindFirstValue(ClaimTypes.Email)
+                ?? User.FindFirstValue("email");
+            var emailVerified = User.FindFirstValue("email_verified");
+
+            if (string.IsNullOrWhiteSpace(subject)
+                || string.IsNullOrWhiteSpace(email)
+                || !bool.TryParse(emailVerified, out var isEmailVerified)
+                || !isEmailVerified)
+            {
+                return Unauthorized(new
+                {
+                    Error = 1,
+                    Message = "Cognito identity must include a verified email."
+                });
+            }
+
+            var result = await _authService.LoginWithCognitoAsync(subject, email);
+            if (result.Error != 0 || result.Data == null)
+            {
+                return Unauthorized(result);
+            }
+
+            Response.AppendJwtTokenCookies(result.Data.Tokens, Request.IsHttps);
+            return Ok(new
+            {
+                Error = 0,
+                Message = "Login Successfully!"
+            });
+        }
+
         [Authorize]
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()

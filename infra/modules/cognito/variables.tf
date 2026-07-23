@@ -17,20 +17,24 @@ variable "aws_region" {
   type        = string
 }
 
-variable "frontend_domain" {
-  description = "Frontend domain for OAuth callbacks"
+variable "frontend_url" {
+  description = "Frontend origin for OAuth callbacks"
   type        = string
-  default     = "localhost:3000"
+  default     = "http://localhost:3000"
 }
 
 variable "google_client_id" {
   description = "Google OAuth client ID"
   type        = string
   sensitive   = true
+  default     = null
+  nullable    = true
 }
 
 variable "google_client_secret" {
   description = "Google OAuth client secret"
   type        = string
   sensitive   = true
+  default     = null
+  nullable    = true
 }
