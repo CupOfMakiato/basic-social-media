@@ -1,9 +1,13 @@
 using BasicSocialMedia.Application.DTOs.Auth;
+
 namespace BasicSocialMedia.API.Extensions
 {
     public static class AuthCookieExtensions
     {
-        public static void AppendJwtTokenCookies(this HttpResponse response, JwtTokenResult tokens, bool secure)
+        public static void AppendJwtTokenCookies(
+            this HttpResponse response,
+            JwtTokenResult tokens,
+            bool secure)
         {
             response.Cookies.Append(
                 tokens.AccessTokenCookieName,
@@ -21,8 +25,9 @@ namespace BasicSocialMedia.API.Extensions
             string accessTokenCookieName,
             string refreshTokenCookieName)
         {
-            response.Cookies.Delete(accessTokenCookieName);
-            response.Cookies.Delete(refreshTokenCookieName);
+            var options = new CookieOptions { Path = "/" };
+            response.Cookies.Delete(accessTokenCookieName, options);
+            response.Cookies.Delete(refreshTokenCookieName, options);
         }
 
         private static CookieOptions CreateCookieOptions(DateTime expiresAt, bool secure)
@@ -32,6 +37,7 @@ namespace BasicSocialMedia.API.Extensions
                 HttpOnly = true,
                 Secure = secure,
                 SameSite = SameSiteMode.Strict,
+                Path = "/",
                 Expires = expiresAt
             };
         }

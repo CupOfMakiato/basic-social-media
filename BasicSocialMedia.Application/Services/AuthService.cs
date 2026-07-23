@@ -5,6 +5,7 @@ using BasicSocialMedia.Application.DTOs.Auth;
 using BasicSocialMedia.Application.IServices;
 using BasicSocialMedia.Domain.Entities;
 using BasicSocialMedia.Domain.Enums;
+using System.Security.Cryptography;
 namespace BasicSocialMedia.Application.Services
 {
     public class AuthService : IAuthService
@@ -81,6 +82,66 @@ namespace BasicSocialMedia.Application.Services
                 return Failed("Email/username or password is incorrect.");
             }
 
+            return await CreateSessionAsync(user);
+        }
+
+        public async Task<Result<AuthResult>> LoginWithCognitoAsync(string subject, string email)
+        {
+            if (string.IsNullOrWhiteSpace(subject) || string.IsNullOrWhiteSpace(email))
+            {
+                return Failed("Cognito subject and email are required.");
+            }
+
+            subject = subject.Trim();
+            email = NormalizeEmail(email);
+
+            var user = await _unitOfWork.UserRepository.GetByCognitoSubjectAsync(subject);
+            if (user == null)
+            {
+                user = await _unitOfWork.UserRepository.GetByEmailAsync(email);
+                if (user != null
+                    && !string.IsNullOrWhiteSpace(user.CognitoSubject)
+                    && user.CognitoSubject != subject)
+                {
+                    return Failed("This email is already linked to another Cognito account.");
+                }
+
+                if (user == null)
+                {
+                    var userRole = await _unitOfWork.UserRepository.GetRoleByNameAsync(DefaultUserRoleName);
+                    if (userRole == null)
+                    {
+                        return Failed("Default user role is not configured.");
+                    }
+
+                    user = new User
+                    {
+                        Id = Guid.NewGuid(),
+                        UserName = $"cognito-{subject}",
+                        Email = _encryptionService.Encrypt(email),
+                        Password = _passwordHasher.HashPassword(
+                            Convert.ToHexString(RandomNumberGenerator.GetBytes(32))),
+                        CognitoSubject = subject,
+                        RoleId = userRole.Id,
+                        Role = userRole,
+                        Status = UserStatus.Active
+                    };
+                    await _unitOfWork.UserRepository.AddAsync(user);
+                }
+                else
+                {
+                    user.CognitoSubject = subject;
+                    _unitOfWork.UserRepository.Update(user);
+                }
+
+                await _unitOfWork.SaveChangeAsync();
+            }
+
+            return await CreateSessionAsync(user);
+        }
+
+        private async Task<Result<AuthResult>> CreateSessionAsync(User user)
+        {
             if (user.Status != UserStatus.Active)
             {
                 return Failed("User account is not active.");

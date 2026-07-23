@@ -39,7 +39,7 @@ var accessTokenCookieName =
     builder.Configuration[$"{JwtSettings.SectionName}:AccessTokenCookieName"]
     ?? new JwtSettings().AccessTokenCookieName;
 
-builder.Services.AddAuthentication(options =>
+var authenticationBuilder = builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -111,6 +111,48 @@ builder.Services.AddAuthentication(options =>
             }
         };
     });
+
+var cognitoAuthority = builder.Configuration["Cognito:Authority"]?.TrimEnd('/');
+var cognitoClientId = builder.Configuration["Cognito:ClientId"];
+
+if (string.IsNullOrWhiteSpace(cognitoAuthority) != string.IsNullOrWhiteSpace(cognitoClientId))
+{
+    throw new InvalidOperationException(
+        "Cognito:Authority and Cognito:ClientId must be configured together.");
+}
+
+if (!string.IsNullOrWhiteSpace(cognitoAuthority)
+    && !string.IsNullOrWhiteSpace(cognitoClientId))
+{
+    authenticationBuilder.AddJwtBearer("Cognito", options =>
+    {
+        options.Authority = cognitoAuthority;
+        options.Audience = cognitoClientId;
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = cognitoAuthority,
+            ValidateAudience = true,
+            ValidAudience = cognitoClientId,
+            ValidateLifetime = true,
+            NameClaimType = "sub",
+            ClockSkew = TimeSpan.FromMinutes(1)
+        };
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = context =>
+            {
+                if (context.Principal?.FindFirstValue("token_use") != "id")
+                {
+                    context.Fail("Only Cognito ID tokens can create an API session.");
+                }
+
+                return Task.CompletedTask;
+            }
+        };
+    });
+}
 //.AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
 //{
 //    options.ClientId = builder.Configuration["GoogleAPI:ClientId"];
@@ -128,7 +170,10 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAllOrigins",
         builder =>
         {
-            builder.WithOrigins()
+            builder.WithOrigins(
+                "http://localhost:3000",
+                "https://localhost:5173",
+                "https://basic-social-media.makiato.workers.dev")
                    .AllowAnyHeader()
                    .AllowCredentials()
                    .AllowAnyMethod();

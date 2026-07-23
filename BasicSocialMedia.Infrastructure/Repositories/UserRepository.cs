@@ -49,6 +49,13 @@ namespace BasicSocialMedia.Infrastructure.Repositories
                 NormalizeEmail(_encryptionService.Decrypt(user.Email)) == normalizedValue);
         }
 
+        public Task<User?> GetByCognitoSubjectAsync(string subject)
+        {
+            return _dbContext.User
+                .Include(user => user.Role)
+                .FirstOrDefaultAsync(user => user.CognitoSubject == subject);
+        }
+
         public async Task<bool> IsEmailTakenAsync(string email)
         {
             var normalizedEmail = NormalizeEmail(email);

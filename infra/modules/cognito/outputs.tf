@@ -43,7 +43,7 @@ output "user_pool" {
 
 output "hosted_ui_url" {
   description = "Cognito Hosted UI URL"
-  value       = "https://${aws_cognito_user_pool_domain.main.domain}.auth.${data.aws_region.current.id}.amazoncognito.com"
+  value       = "https://${aws_cognito_user_pool_domain.main.domain}.auth.${data.aws_region.current.region}.amazoncognito.com"
 }
 
 data "aws_region" "current" {}

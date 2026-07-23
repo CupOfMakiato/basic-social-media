@@ -2,6 +2,11 @@
 # Cognito Module - User Authentication
 # =============================================================================
 
+locals {
+  frontend_url   = trimsuffix(var.frontend_url, "/")
+  google_enabled = var.google_client_id != null && var.google_client_secret != null
+}
+
 # User Pool
 resource "aws_cognito_user_pool" "main" {
   name = "${var.project_name}-${var.environment}-users"
@@ -57,23 +62,27 @@ resource "aws_cognito_user_pool_client" "web_client" {
   name         = "${var.project_name}-${var.environment}-web-client"
   user_pool_id = aws_cognito_user_pool.main.id
 
+  explicit_auth_flows = [
+    "ALLOW_USER_SRP_AUTH",
+    "ALLOW_REFRESH_TOKEN_AUTH"
+  ]
+
   allowed_oauth_flows_user_pool_client = true
   allowed_oauth_flows                  = ["code"]
   allowed_oauth_scopes                 = ["email", "openid", "profile"]
 
   callback_urls = [
-    "http://localhost:3000/auth/callback",
-    "https://${var.frontend_domain}/auth/callback",
-    "https://www.${var.frontend_domain}/auth/callback"
+    "${local.frontend_url}/auth/callback"
   ]
 
   logout_urls = [
-    "http://localhost:3000",
-    "https://${var.frontend_domain}",
-    "https://www.${var.frontend_domain}"
+    local.frontend_url
   ]
 
-  supported_identity_providers = ["COGNITO", "Google"]
+  supported_identity_providers = concat(
+    ["COGNITO"],
+    local.google_enabled ? ["Google"] : []
+  )
 
   access_token_validity  = 15
   id_token_validity      = 15
@@ -115,6 +124,8 @@ resource "aws_cognito_user_group" "users" {
 
 # Google OAuth Identity Provider
 resource "aws_cognito_identity_provider" "google" {
+  count = local.google_enabled ? 1 : 0
+
   user_pool_id  = aws_cognito_user_pool.main.id
   provider_name = "Google"
   provider_type = "Google"
