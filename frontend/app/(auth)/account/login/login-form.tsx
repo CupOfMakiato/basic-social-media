@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from 'react'
 import Link from 'next/link'
+import { signInWithRedirect } from 'aws-amplify/auth'
 import { Button } from '@/components/ui/button'
 import {
 	Card,
@@ -14,7 +15,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { routes } from '@/config/routes'
 import { useLogin } from '@/hooks/auth/use-login'
-import { isAmplifyAuthConfigured } from '@/lib/amplify-auth'
+import {
+	isAmplifyAuthConfigured,
+	isAmplifyOAuthConfigured,
+} from '@/lib/amplify-auth'
 
 type LoginFormProps = {
 	confirmed: boolean
@@ -29,6 +33,22 @@ export function LoginForm({ confirmed }: LoginFormProps) {
 	const { login, confirmLogin, isLoading, error, clearError } = useLogin()
 
 	const configReady = isAmplifyAuthConfigured()
+	const oauthReady = isAmplifyOAuthConfigured()
+
+	async function handleHostedUiSignIn() {
+		if (!oauthReady) return
+
+		clearError()
+		setStepError(undefined)
+
+		try {
+			await signInWithRedirect()
+		} catch (error) {
+			setStepError(
+				error instanceof Error ? error.message : 'Sign in could not start.'
+			)
+		}
+	}
 
 	async function handleLogin(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault()
@@ -156,6 +176,18 @@ export function LoginForm({ confirmed }: LoginFormProps) {
 					>
 						{isLoading ? 'Please wait...' : needsCode ? 'Verify' : 'Sign in'}
 					</Button>
+
+					{!needsCode && oauthReady ? (
+						<Button
+							className='w-full'
+							type='button'
+							variant='outline'
+							disabled={isLoading}
+							onClick={handleHostedUiSignIn}
+						>
+							Continue with Cognito
+						</Button>
+					) : null}
 
 					{!needsCode ? (
 						<p className='text-center text-sm text-muted-foreground'>
