@@ -1,5 +1,4 @@
 using BasicSocialMedia.Application.IServices;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace BasicSocialMedia.API.Services
@@ -9,7 +8,6 @@ namespace BasicSocialMedia.API.Services
         public ClaimService(IHttpContextAccessor httpContextAccessor)
         {
             var id = httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier)
-                ?? httpContextAccessor.HttpContext?.User?.FindFirstValue(JwtRegisteredClaimNames.Sub)
                 ?? httpContextAccessor.HttpContext?.User?.FindFirstValue("id");
 
             GetCurrentUserId = Guid.TryParse(id, out var userId) ? userId : Guid.Empty;

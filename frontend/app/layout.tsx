@@ -35,6 +35,7 @@ export default function RootLayout({
 		>
 			<body className='min-h-screen'>
 				<AmplifyProvider
+					hostedUiUrl={process.env.COGNITO_HOSTED_UI_URL}
 					userPoolClientId={process.env.COGNITO_CLIENT_ID}
 					userPoolId={process.env.COGNITO_USER_POOL_ID}
 				>

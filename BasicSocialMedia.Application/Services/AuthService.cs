@@ -134,7 +134,20 @@ namespace BasicSocialMedia.Application.Services
                     _unitOfWork.UserRepository.Update(user);
                 }
 
-                await _unitOfWork.SaveChangeAsync();
+                try
+                {
+                    await _unitOfWork.SaveChangeAsync();
+                }
+                catch
+                {
+                    var concurrentUser = await _unitOfWork.UserRepository.GetByCognitoSubjectAsync(subject);
+                    if (concurrentUser == null)
+                    {
+                        throw;
+                    }
+
+                    user = concurrentUser;
+                }
             }
 
             return await CreateSessionAsync(user);

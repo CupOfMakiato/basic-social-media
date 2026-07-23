@@ -3,8 +3,13 @@
 # =============================================================================
 
 locals {
-  frontend_url   = trimsuffix(var.frontend_url, "/")
-  google_enabled = var.google_client_id != null && var.google_client_secret != null
+  frontend_url          = trimsuffix(var.frontend_url, "/")
+  google_client_id      = var.google_client_id == null ? "" : trimspace(var.google_client_id)
+  google_client_secret  = var.google_client_secret == null ? "" : trimspace(var.google_client_secret)
+  google_client_id_set  = nonsensitive(local.google_client_id != "")
+  google_secret_set     = nonsensitive(local.google_client_secret != "")
+  google_enabled        = local.google_client_id_set && local.google_secret_set
+  google_partial_config = local.google_client_id_set != local.google_secret_set
 }
 
 # User Pool
@@ -54,6 +59,11 @@ resource "aws_cognito_user_pool" "main" {
 
   lifecycle {
     ignore_changes = [schema]
+
+    precondition {
+      condition     = !local.google_partial_config
+      error_message = "Google OAuth requires both google_client_id and google_client_secret, or neither."
+    }
   }
 }
 
@@ -131,8 +141,8 @@ resource "aws_cognito_identity_provider" "google" {
   provider_type = "Google"
 
   provider_details = {
-    client_id        = var.google_client_id
-    client_secret    = var.google_client_secret
+    client_id        = local.google_client_id
+    client_secret    = local.google_client_secret
     authorize_scopes = "profile email openid"
   }
 

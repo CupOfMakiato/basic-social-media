@@ -12,14 +12,41 @@ import {
 import { createAppSession } from '@/lib/auth-session'
 import type { AuthStore } from '@/types/auth'
 
+const cognitoErrorMessages: Record<string, string> = {
+	AliasExistsException:
+		'Sign up could not be completed. Check your details and try again.',
+	CodeMismatchException: 'The verification code is invalid or expired.',
+	ExpiredCodeException: 'The verification code is invalid or expired.',
+	InvalidPasswordException:
+		'Sign up could not be completed. Check your details and try again.',
+	InvalidParameterException:
+		'Authentication could not be completed. Please try again.',
+	LimitExceededException: 'Too many attempts. Please wait and try again.',
+	NotAuthorizedException: 'Email or password is incorrect.',
+	PasswordResetRequiredException:
+		'Authentication could not be completed. Please reset your password.',
+	TooManyFailedAttemptsException: 'Too many attempts. Please wait and try again.',
+	TooManyRequestsException: 'Too many attempts. Please wait and try again.',
+	UserNotConfirmedException:
+		'Authentication could not be completed. Please verify your account.',
+	UserNotFoundException: 'Email or password is incorrect.',
+	UsernameExistsException:
+		'Sign up could not be completed. Check your details and try again.',
+}
+
 function getErrorMessage(error: unknown) {
 	if (!(error instanceof Error)) {
 		return 'Authentication could not be completed. Please try again.'
 	}
 
-	return process.env.NODE_ENV === 'development'
-		? `${error.name}: ${error.message}`
-		: error.message
+	if (process.env.NODE_ENV === 'development') {
+		return `${error.name}: ${error.message}`
+	}
+
+	return (
+		cognitoErrorMessages[error.name] ??
+		'Authentication could not be completed. Please try again.'
+	)
 }
 
 async function completeSignIn() {
