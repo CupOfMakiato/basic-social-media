@@ -1,5 +1,5 @@
 export const routes = {
-	landing: '/landing',
+	landing: '/',
 	signIn: '/account/login',
 	signUp: '/account/register',
 } as const

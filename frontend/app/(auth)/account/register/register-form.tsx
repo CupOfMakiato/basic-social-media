@@ -46,7 +46,7 @@ export function RegisterForm() {
 		clearError()
 
 		try {
-			await confirmRegistration({ email, code: confirmationCode })
+			await confirmRegistration({ email, password, code: confirmationCode })
 		} catch {}
 	}
 

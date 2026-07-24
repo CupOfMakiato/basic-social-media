@@ -6,9 +6,9 @@ data "doppler_secrets" "this" {
 # Local values derived from Doppler secrets
 locals {
   # Environment configuration
-  environment  = try(data.doppler_secrets.this.map.TF_ENVIRONMENT, "dev")
-  project_name = try(data.doppler_secrets.this.map.TF_PROJECT_NAME, "socialmedia")
-  aws_region   = try(data.doppler_secrets.this.map.TF_AWS_REGION, "ap-southeast-1")
+  environment  = try(data.doppler_secrets.this.map.TF_ENVIRONMENT, var.environment)
+  project_name = try(data.doppler_secrets.this.map.TF_PROJECT_NAME, var.project_name)
+  aws_region   = try(data.doppler_secrets.this.map.TF_AWS_REGION, var.aws_region)
 
   # Domain configuration
   api_domain   = try(data.doppler_secrets.this.map.TF_API_DOMAIN, "https://localhost:7161")
@@ -16,9 +16,15 @@ locals {
   #   ses_domain      = try(data.doppler_secrets.this.map.TF_SES_DOMAIN, "empty")
 
   # Database configuration
-  db_connection_string            = data.doppler_secrets.this.map.CONNECTIONSTRINGS_DEFAULTCONNECTION
+  neon_org_id                     = data.doppler_secrets.this.map.NEON_ORG_ID
+  neon_region                     = try(data.doppler_secrets.this.map.TF_NEON_REGION, "aws-ap-southeast-1")
+  db_connection_string            = module.neondb.database_connection_string
   redis_connection_string         = try(data.doppler_secrets.this.map.CONNECTIONSTRINGS_REDIS, "")
   upstash_redis_connection_string = module.upstash.connection_string
+  test_admin_email                = data.doppler_secrets.this.map.TEST_ADMIN_EMAIL
+  test_admin_password             = data.doppler_secrets.this.map.TEST_ADMIN_PASSWORD
+  test_user_email                 = data.doppler_secrets.this.map.TEST_USER_EMAIL
+  test_user_password              = data.doppler_secrets.this.map.TEST_USER_PASSWORD
 
   lambda_environment = {
     ASPNETCORE_ENVIRONMENT               = local.environment
@@ -39,4 +45,12 @@ locals {
   r2_bucket_name       = data.doppler_secrets.this.map.R2_BUCKET_NAME
   r2_account_id        = data.doppler_secrets.this.map.R2_ACCOUNT_ID
   r2_public_endpoint   = data.doppler_secrets.this.map.R2_PUBLIC_ENDPOINT
+  r2_location          = try(data.doppler_secrets.this.map.R2_LOCATION, "apac")
+}
+
+resource "doppler_secret" "database_connection_string" {
+  project = var.doppler_project
+  config  = var.doppler_config
+  name    = "CONNECTIONSTRINGS_DEFAULTCONNECTION"
+  value   = module.neondb.database_connection_string
 }

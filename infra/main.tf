@@ -7,13 +7,34 @@ module "cognito" {
   frontend_url         = local.frontend_url
   google_client_id     = try(data.doppler_secrets.this.map.GOOGLE_CLIENT_ID, null)
   google_client_secret = try(data.doppler_secrets.this.map.GOOGLE_CLIENT_SECRET, null)
+  test_admin_email     = local.test_admin_email
+  test_admin_password  = local.test_admin_password
+  test_user_email      = local.test_user_email
+  test_user_password   = local.test_user_password
 }
 
 module "upstash" {
   source = "./modules/upstash"
 
   database_name  = "${local.project_name}-${local.environment}-redis"
-  primary_region = var.aws_region
+  primary_region = local.aws_region
+}
+
+module "neondb" {
+  source = "./modules/neondb"
+
+  project_name = local.project_name
+  environment  = local.environment
+  org_id       = local.neon_org_id
+  region_id    = local.neon_region
+}
+
+module "cloudflare" {
+  source = "./modules/cloudflare"
+
+  account_id  = local.r2_account_id
+  bucket_name = local.r2_bucket_name
+  location    = local.r2_location
 }
 
 module "api_lambda" {
@@ -81,4 +102,12 @@ output "lambda_function_name" {
 
 output "github_actions_lambda_deploy_role_arn" {
   value = module.iam.github_actions_lambda_deploy_role_arn
+}
+
+output "neon_project_id" {
+  value = module.neondb.project_id
+}
+
+output "r2_bucket_name" {
+  value = nonsensitive(module.cloudflare.bucket_name)
 }

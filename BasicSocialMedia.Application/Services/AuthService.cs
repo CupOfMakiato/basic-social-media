@@ -85,16 +85,28 @@ namespace BasicSocialMedia.Application.Services
             return await CreateSessionAsync(user);
         }
 
-        public async Task<Result<AuthResult>> LoginWithCognitoAsync(string subject, string email)
+        public async Task<Result<AuthResult>> LoginWithCognitoAsync(
+            string subject,
+            string email,
+            string roleName)
         {
-            if (string.IsNullOrWhiteSpace(subject) || string.IsNullOrWhiteSpace(email))
+            if (string.IsNullOrWhiteSpace(subject)
+                || string.IsNullOrWhiteSpace(email)
+                || string.IsNullOrWhiteSpace(roleName))
             {
-                return Failed("Cognito subject and email are required.");
+                return Failed("Cognito subject, email, and role are required.");
             }
 
             subject = subject.Trim();
             email = NormalizeEmail(email);
 
+            var userRole = await _unitOfWork.UserRepository.GetRoleByNameAsync(roleName);
+            if (userRole == null)
+            {
+                return Failed("Cognito role is not configured.");
+            }
+
+            var shouldSave = false;
             var user = await _unitOfWork.UserRepository.GetByCognitoSubjectAsync(subject);
             if (user == null)
             {
@@ -108,12 +120,6 @@ namespace BasicSocialMedia.Application.Services
 
                 if (user == null)
                 {
-                    var userRole = await _unitOfWork.UserRepository.GetRoleByNameAsync(DefaultUserRoleName);
-                    if (userRole == null)
-                    {
-                        return Failed("Default user role is not configured.");
-                    }
-
                     user = new User
                     {
                         Id = Guid.NewGuid(),
@@ -127,13 +133,27 @@ namespace BasicSocialMedia.Application.Services
                         Status = UserStatus.Active
                     };
                     await _unitOfWork.UserRepository.AddAsync(user);
+                    shouldSave = true;
                 }
                 else
                 {
                     user.CognitoSubject = subject;
+                    user.RoleId = userRole.Id;
+                    user.Role = userRole;
                     _unitOfWork.UserRepository.Update(user);
+                    shouldSave = true;
                 }
+            }
+            else if (user.RoleId != userRole.Id)
+            {
+                user.RoleId = userRole.Id;
+                user.Role = userRole;
+                _unitOfWork.UserRepository.Update(user);
+                shouldSave = true;
+            }
 
+            if (shouldSave)
+            {
                 try
                 {
                     await _unitOfWork.SaveChangeAsync();
