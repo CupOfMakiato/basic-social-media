@@ -12,8 +12,7 @@ export type LoginInput = {
 
 export type RegisterInput = LoginInput
 
-export type ConfirmRegistrationInput = {
-	email: string
+export type ConfirmRegistrationInput = RegisterInput & {
 	code: string
 }
 

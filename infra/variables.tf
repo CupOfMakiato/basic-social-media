@@ -12,7 +12,7 @@ variable "cors_origins" {
 # =============================================================================
 
 variable "DOPPLER_TOKEN" {
-  description = "Doppler service token for accessing secrets (set via TF_VAR_doppler_token)"
+  description = "Doppler Personal Token with secret write access (set via TF_VAR_DOPPLER_TOKEN)"
   type        = string
   sensitive   = true
 }

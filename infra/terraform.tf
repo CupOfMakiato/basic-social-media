@@ -10,6 +10,14 @@ terraform {
       source  = "dopplerhq/doppler"
       version = "~> 1.21"
     }
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "~> 5.22"
+    }
+    neon = {
+      source  = "kislerdm/neon"
+      version = "~> 0.14"
+    }
     awsutils = {
       source  = "cloudposse/awsutils"
       version = ">= 0.11.0"

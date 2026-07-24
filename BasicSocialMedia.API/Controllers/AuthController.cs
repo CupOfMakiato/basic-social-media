@@ -1,4 +1,5 @@
 using BasicSocialMedia.API.Extensions;
+using BasicSocialMedia.API.Identity;
 using BasicSocialMedia.Application.Abstractions.Shared;
 using BasicSocialMedia.Application.DTOs.Auth;
 using BasicSocialMedia.Application.IServices;
@@ -82,7 +83,10 @@ namespace BasicSocialMedia.API.Controllers
                 });
             }
 
-            var result = await _authService.LoginWithCognitoAsync(subject, email);
+            var roleName = User.IsInRole("Admins")
+                ? IdentityData.AdminUserPolicyName
+                : IdentityData.UserPolicyName;
+            var result = await _authService.LoginWithCognitoAsync(subject, email, roleName);
             if (result.Error != 0 || result.Data == null)
             {
                 return Unauthorized(result);

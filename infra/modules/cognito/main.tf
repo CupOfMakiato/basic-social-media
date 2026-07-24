@@ -10,6 +10,18 @@ locals {
   google_secret_set     = nonsensitive(local.google_client_secret != "")
   google_enabled        = local.google_client_id_set && local.google_secret_set
   google_partial_config = local.google_client_id_set != local.google_secret_set
+  test_accounts = {
+    admin = {
+      email    = var.test_admin_email
+      password = var.test_admin_password
+      group    = aws_cognito_user_group.admins.name
+    }
+    user = {
+      email    = var.test_user_email
+      password = var.test_user_password
+      group    = aws_cognito_user_group.users.name
+    }
+  }
 }
 
 # User Pool
@@ -130,6 +142,28 @@ resource "aws_cognito_user_group" "users" {
   user_pool_id = aws_cognito_user_pool.main.id
   description  = "Users group"
   precedence   = 2
+}
+
+resource "aws_cognito_user" "test" {
+  for_each = local.test_accounts
+
+  user_pool_id   = aws_cognito_user_pool.main.id
+  username       = each.value.email
+  password       = each.value.password
+  message_action = "SUPPRESS"
+
+  attributes = {
+    email          = each.value.email
+    email_verified = "true"
+  }
+}
+
+resource "aws_cognito_user_in_group" "test" {
+  for_each = local.test_accounts
+
+  user_pool_id = aws_cognito_user_pool.main.id
+  group_name   = each.value.group
+  username     = aws_cognito_user.test[each.key].username
 }
 
 # Google OAuth Identity Provider

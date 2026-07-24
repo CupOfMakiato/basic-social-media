@@ -137,6 +137,7 @@ if (!string.IsNullOrWhiteSpace(cognitoAuthority)
             ValidAudience = cognitoClientId,
             ValidateLifetime = true,
             NameClaimType = "sub",
+            RoleClaimType = "cognito:groups",
             ClockSkew = TimeSpan.FromMinutes(1)
         };
         options.Events = new JwtBearerEvents
